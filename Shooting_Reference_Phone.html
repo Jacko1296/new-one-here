@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Shoot Ref">
+<title>Shooting Reference</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --accent: #E63946;
+    --bg: #ffffff;
+    --bg2: #f5f5f4;
+    --bg3: #eeede8;
+    --text: #1a1a1a;
+    --text2: #555550;
+    --text3: #999993;
+    --border: rgba(0,0,0,0.12);
+    --border2: rgba(0,0,0,0.22);
+    --blue: #185FA5;
+    --blue-bg: #E6F1FB;
+    --red-bg: #FCEBEB;
+    --green: #3B6D11;
+    --green-bg: #EAF3DE;
+    --r: 8px;
+    --rl: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1e;
+      --bg2: #2c2c2e;
+      --bg3: #3a3a3c;
+      --text: #f2f2f7;
+      --text2: #aeaeb2;
+      --text3: #636366;
+      --border: rgba(255,255,255,0.12);
+      --border2: rgba(255,255,255,0.22);
+      --blue-bg: #0c2340;
+      --red-bg: #2d0f0f;
+      --green-bg: #0f1f04;
+    }
+  }
+  html, body { height: 100%; overflow: hidden; background: var(--bg); }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; color: var(--text); display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; }
+
+  /* HEADER */
+  .header {
+    padding: env(safe-area-inset-top, 14px) 16px 10px;
+    padding-top: max(env(safe-area-inset-top), 14px);
+    border-bottom: 0.5px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg);
+    flex-shrink: 0;
+  }
+  .header-title { font-size: 12px; font-weight: 600; color: var(--text2); letter-spacing: 0.07em; text-transform: uppercase; }
+  .page-ind { font-size: 13px; color: var(--text3); }
+
+  /* DOTS */
+  .dots { display: flex; gap: 5px; justify-content: center; padding: 8px 16px 4px; flex-shrink: 0; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border2); transition: all 0.2s; cursor: pointer; }
+  .dot.active { background: var(--accent); width: 18px; border-radius: 3px; }
+
+  /* SLIDES */
+  .slides-wrap { flex: 1; overflow: hidden; }
+  .slides { display: flex; height: 100%; transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); }
+  .slide { min-width: 100%; height: 100%; overflow-y: auto; padding: 14px 16px 8px; -webkit-overflow-scrolling: touch; }
+  .slide-title { font-size: 20px; font-weight: 600; color: var(--text); margin-bottom: 3px; padding-bottom: 10px; border-bottom: 2px solid var(--accent); }
+  .slide-sub { font-size: 12px; color: var(--text3); margin: 5px 0 14px; }
+
+  /* NAV */
+  .nav-btns {
+    display: flex; gap: 8px; padding: 8px 16px;
+    padding-bottom: max(env(safe-area-inset-bottom), 12px);
+    border-top: 0.5px solid var(--border);
+    background: var(--bg);
+    flex-shrink: 0;
+  }
+  .nav-btn { flex: 1; padding: 10px; border: 0.5px solid var(--border2); border-radius: var(--r); background: transparent; color: var(--text); font-size: 14px; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .nav-btn:active { background: var(--bg2); transform: scale(0.98); }
+  .nav-btn:disabled { opacity: 0.28; }
+
+  /* CONTENT */
+  .section { margin-bottom: 14px; }
+  .section-label { font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 7px; }
+  .card { background: var(--bg2); border-radius: var(--r); padding: 9px 12px; margin-bottom: 6px; }
+  .card-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .card-label { font-size: 13px; color: var(--text2); flex: 1; }
+  .card-value { font-size: 13px; font-weight: 500; color: var(--text); text-align: right; flex: 1; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 2px; }
+  th { font-size: 11px; font-weight: 600; color: var(--text2); text-align: left; padding: 5px 8px; background: var(--bg2); border-bottom: 0.5px solid var(--border); }
+  td { padding: 7px 8px; border-bottom: 0.5px solid var(--border); color: var(--text); vertical-align: top; line-height: 1.4; }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: var(--bg2); }
+
+  .note { background: var(--red-bg); border-left: 3px solid var(--accent); border-radius: 0 var(--r) var(--r) 0; padding: 9px 12px; font-size: 12px; color: var(--text2); line-height: 1.5; margin-bottom: 10px; }
+  .note-blue { background: var(--blue-bg); border-left-color: var(--blue); }
+
+  .scenario { border-radius: var(--r); padding: 8px 12px; font-size: 13px; font-weight: 600; margin-bottom: 9px; }
+  .sc-blue { background: var(--blue-bg); color: var(--blue); }
+  .sc-red { background: var(--red-bg); color: var(--accent); }
+
+  .step { display: flex; gap: 9px; margin-bottom: 7px; align-items: flex-start; }
+  .snum { min-width: 20px; height: 20px; background: var(--accent); color: #fff; border-radius: 50%; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px; flex-shrink: 0; }
+  .snum-blue { background: var(--blue); }
+  .stext { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+  .bul { display: flex; gap: 8px; margin-bottom: 6px; }
+  .bdot { color: var(--accent); font-size: 18px; line-height: 1.1; min-width: 10px; }
+  .btext { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+  .hl { color: var(--accent); font-weight: 600; }
+  .divider { height: 0.5px; background: var(--border); margin: 12px 0; }
+
+  /* CHECKLIST */
+  .cl-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--border); align-items: flex-start; cursor: pointer; user-select: none; }
+  .cl-item:last-child { border-bottom: none; }
+  .cb { width: 20px; height: 20px; border: 1.5px solid var(--border2); border-radius: 5px; min-width: 20px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
+  .cb.on { background: var(--accent); border-color: var(--accent); }
+  .cb.on::after { content: '✓'; color: #fff; font-size: 12px; font-weight: 700; }
+  .cl-text { font-size: 13px; color: var(--text); line-height: 1.4; }
+  .cl-text.done { text-decoration: line-through; color: var(--text3); }
+  .reset-btn { margin-top: 14px; font-size: 12px; padding: 7px 16px; border: 0.5px solid var(--border2); border-radius: var(--r); background: transparent; color: var(--text2); cursor: pointer; font-family: inherit; }
+  .reset-btn:active { background: var(--bg2); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header-title">Shooting Reference</span>
+  <span class="page-ind" id="pi">1 / 10</span>
+</div>
+
+<div class="dots" id="dots"></div>
+
+<div class="slides-wrap">
+<div class="slides" id="slides">
+
+<!-- PAGE 1: FORMAT MAP -->
+<div class="slide">
+  <div class="slide-title">Camera & format map</div>
+  <div class="slide-sub">A7S III + iPhone 15 Pro</div>
+  <table>
+    <thead><tr><th>Camera</th><th>Format</th><th>fps</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td>A7S III</td><td>S-Log3 XAVC S 4K</td><td>50</td><td>A-roll / B-roll</td></tr>
+      <tr><td>A7S III</td><td>S-Log3 XAVC S 4K</td><td>100</td><td>Slo-mo <span style="font-size:11px;color:var(--text3)">(1.1x crop)</span></td></tr>
+      <tr><td>iPhone</td><td>HEVC 1080p</td><td>25</td><td>B-roll</td></tr>
+      <tr><td>iPhone</td><td>HEVC Slo-mo</td><td>120</td><td>Slo-mo</td></tr>
+      <tr><td>iPhone</td><td>HEVC Slo-mo</td><td>240</td><td>Ultra slo-mo</td></tr>
+    </tbody>
+  </table>
+  <div class="divider"></div>
+  <div class="section-label">Slow motion on 25fps timeline</div>
+  <table>
+    <thead><tr><th>Source</th><th>Shot at</th><th>Playback speed</th></tr></thead>
+    <tbody>
+      <tr><td>A7S III</td><td>50fps</td><td>50%</td></tr>
+      <tr><td>A7S III</td><td>100fps</td><td>25%</td></tr>
+      <tr><td>iPhone</td><td>120fps</td><td>20.8%</td></tr>
+      <tr><td>iPhone</td><td>240fps</td><td>10.4%</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- PAGE 2: IPHONE SETTINGS -->
+<div class="slide">
+  <div class="slide-title">iPhone 15 Pro settings</div>
+  <div class="slide-sub">Set once and leave</div>
+  <div class="section">
+    <div class="section-label">Settings → Camera → Formats</div>
+    <div class="bul"><span class="bdot">·</span><span class="btext">Video Format: <span class="hl">High Efficiency (HEVC)</span></span></div>
+    <div class="bul"><span class="bdot">·</span><span class="btext">HDR Video: <span class="hl">Off</span></span></div>
+    <div class="bul"><span class="bdot">·</span><span class="btext">Log Video: <span class="hl">Off</span></span></div>
+  </div>
+  <div class="section">
+    <div class="section-label">Settings → Camera → Record Video</div>
+    <div class="bul"><span class="bdot">·</span><span class="btext">1080p at <span class="hl">25fps</span></span></div>
+  </div>
+  <div class="section">
+    <div class="section-label">Settings → Camera → Record Slo-mo</div>
+    <div class="bul"><span class="bdot">·</span><span class="btext"><span class="hl">1080p at 120fps</span> — standard slo-mo</span></div>
+    <div class="bul"><span class="bdot">·</span><span class="btext"><span class="hl">1080p at 240fps</span> — ultra slo-mo</span></div>
+  </div>
+  <div class="section">
+    <div class="section-label">Every clip — Camera app</div>
+    <div class="bul"><span class="bdot">·</span><span class="btext">Tap and hold to lock AE/AF before recording</span></div>
+    <div class="bul"><span class="bdot">·</span><span class="btext">Use AWB Lock — never leave on full auto WB</span></div>
+  </div>
+  <div class="note">Slo-mo clips: set Clip Attributes → Frame Rate: 25 in Resolve after import</div>
+</div>
+
+<!-- PAGE 3: LOG SHOOTING SETTINGS -->
+<div class="slide">
+  <div class="slide-title">A7S III log settings</div>
+  <div class="slide-sub">Configure once, leave set</div>
+  <table>
+    <thead><tr><th>Setting</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Log Shooting</td><td><span class="hl">On (Flexible ISO)</span></td></tr>
+      <tr><td>Color Gamut</td><td>S-Gamut3.Cine / S-Log3</td></tr>
+      <tr><td>Embed LUT File</td><td>On</td></tr>
+      <tr><td>LUT</td><td>S709 (built-in)</td></tr>
+    </tbody>
+  </table>
+  <div class="note" style="margin-top:12px">The S709 LUT is monitoring only — footage is always recorded as pure S-Log3. It is applied to the viewfinder and HDMI output only.</div>
+  <div class="note">Because S709 is active, all monitoring tools — camera zebras and DC-A1 waveform/histogram — are measuring the S709 signal. Zebra levels are different from raw S-Log3 levels.</div>
+</div>
+
+<!-- PAGE 4: ZEBRAS -->
+<div class="slide">
+  <div class="slide-title">Zebra setup</div>
+  <div class="slide-sub">Menu → Exposure/Colour → Zebra Setting</div>
+  <div class="note" style="margin-bottom:12px">Levels calibrated for S709 signal. Do not use raw S-Log3 levels (41–52% / 85%) while S709 is active.</div>
+  <table>
+    <thead><tr><th>Slot</th><th>Type</th><th>Level</th><th>Range</th></tr></thead>
+    <tbody>
+      <tr><td><span class="hl">C1</span></td><td>Standard + Range</td><td><span class="hl">61%</span></td><td>±2%</td></tr>
+      <tr><td><span class="hl">C2</span></td><td>Lower Limit</td><td><span class="hl">77%</span></td><td>—</td></tr>
+    </tbody>
+  </table>
+  <div class="divider"></div>
+  <div class="section-label">What they measure</div>
+  <div class="card"><div class="card-row"><span class="card-label">C1 (61%)</span><span class="card-value">Bright skin tones — exposure target</span></div></div>
+  <div class="card"><div class="card-row"><span class="card-label">C2 (77%)</span><span class="card-value">Approaching clip — white card sits at 77–83%</span></div></div>
+</div>
+
+<!-- PAGE 5: EXPOSURE -->
+<div class="slide">
+  <div class="slide-title">Exposure</div>
+  <div class="slide-sub">Two modes</div>
+  <div class="scenario sc-blue">Controlled — studio / Godox lights</div>
+  <div class="step"><div class="snum snum-blue">1</div><span class="stext">Hold white card in scene under your lights</span></div>
+  <div class="step"><div class="snum snum-blue">2</div><span class="stext">Adjust until C2 (77%) fires on the white card</span></div>
+  <div class="step"><div class="snum snum-blue">3</div><span class="stext">Confirm white card at 77–83% on DC-A1 waveform</span></div>
+  <div class="step"><div class="snum snum-blue">4</div><span class="stext">Lock exposure. Set custom WB.</span></div>
+  <div class="note note-blue" style="margin:8px 0 14px">No ETTR needed. A7S III handles shadows cleanly at correct exposure.</div>
+
+  <div class="scenario sc-red">Run and gun — changing light</div>
+  <div class="step"><div class="snum">1</div><span class="stext">Expose so C1 (61%) just fires on subject's skin</span></div>
+  <div class="step"><div class="snum">2</div><span class="stext">Check C2 (77%) is NOT firing on subject's face</span></div>
+  <div class="step"><div class="snum">3</div><span class="stext">If C2 fires on subject → pull exposure down</span></div>
+  <div class="step"><div class="snum">4</div><span class="stext">C2 on background only → acceptable</span></div>
+  <div class="note" style="margin-top:8px">Optional ETTR: push until C1 disappears from skin, back off half a stop. ~+0.5 stop. Watch C2 doesn't fire on subject.</div>
+</div>
+
+<!-- PAGE 6: WHITE BALANCE -->
+<div class="slide">
+  <div class="slide-title">White balance</div>
+  <div class="slide-sub">Never use full auto WB — drifts mid-clip</div>
+  <div class="scenario sc-blue">Controlled — custom WB</div>
+  <div class="step"><div class="snum snum-blue">1</div><span class="stext">Set camera to S-Log3 at shooting exposure</span></div>
+  <div class="step"><div class="snum snum-blue">2</div><span class="stext">Hold white card under your actual lights</span></div>
+  <div class="step"><div class="snum snum-blue">3</div><span class="stext">Menu → Exposure/Colour → White Balance → Custom Setup</span></div>
+  <div class="step"><div class="snum snum-blue">4</div><span class="stext">Point at card, press shutter → locked for entire shoot</span></div>
+  <div class="divider"></div>
+  <div class="scenario sc-red">Run and gun — AWB Lock Toggle</div>
+  <div class="note" style="margin-bottom:8px">Setup once: Menu → Camera Settings 2 → Custom Key/Dial Settings → assign AWB Lock Toggle to a button</div>
+  <div class="step"><div class="snum">1</div><span class="stext">Point at subject or neutral area</span></div>
+  <div class="step"><div class="snum">2</div><span class="stext">Press AWB Lock → WB locks instantly</span></div>
+  <div class="step"><div class="snum">3</div><span class="stext">Hit record — WB won't drift mid-clip</span></div>
+  <div class="step"><div class="snum">4</div><span class="stext">As light changes: unlock → re-read → re-lock</span></div>
+  <div class="divider"></div>
+  <div class="section-label">Kelvin fallback</div>
+  <table>
+    <thead><tr><th>Light source</th><th>Kelvin</th></tr></thead>
+    <tbody>
+      <tr><td>Tungsten / warm indoor</td><td>3200K</td></tr>
+      <tr><td>Fluorescent / office</td><td>4000–4500K</td></tr>
+      <tr><td>Daylight / overcast</td><td>5600K</td></tr>
+      <tr><td>Direct sun</td><td>6000–6500K</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- PAGE 7: ISO -->
+<div class="slide">
+  <div class="slide-title">ISO — S-Log3</div>
+  <div class="slide-sub">A7S III native ISOs: 640 and 12,800</div>
+  <table>
+    <thead><tr><th>ISO</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td><span class="hl">640</span></td><td>Native ISO — base, max dynamic range, cleanest image</td></tr>
+      <tr><td>640–6400</td><td>Safe range for clean footage</td></tr>
+      <tr><td>6400–12800</td><td>Usable — noise starts to increase</td></tr>
+      <tr><td>Above 12800</td><td>Noticeable noise — avoid if possible</td></tr>
+      <tr><td style="color:var(--text3)">Below 640</td><td style="color:var(--text3)">Avoid — lose dynamic range in S-Log3</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- PAGE 8: DC-A1 -->
+<div class="slide">
+  <div class="slide-title">Viltrox DC-A1</div>
+  <div class="slide-sub">S709 signal via HDMI — no LUT needed on monitor</div>
+  <div class="section">
+    <div class="section-label">Shortcut keys (F1–F4)</div>
+    <div class="card"><div class="card-row"><span class="card-label">F1</span><span class="card-value">Waveform</span></div></div>
+    <div class="card"><div class="card-row"><span class="card-label">F2</span><span class="card-value">Histogram</span></div></div>
+    <div class="card"><div class="card-row"><span class="card-label">F3</span><span class="card-value">Focus Peaking</span></div></div>
+    <div class="card"><div class="card-row"><span class="card-label">F4</span><span class="card-value">Zebra (optional)</span></div></div>
+  </div>
+  <div class="note">Fan on Low when using Rode VideoMic NTG on camera — fan on High is audible enough to affect shotgun mic audio.</div>
+  <div class="divider"></div>
+  <div class="section-label">S709 waveform reference levels</div>
+  <table>
+    <thead><tr><th>Tone</th><th>Level</th></tr></thead>
+    <tbody>
+      <tr><td>Shadows (safe floor)</td><td>Above 10%</td></tr>
+      <tr><td>Middle grey</td><td>42–45%</td></tr>
+      <tr><td>Mid skin tones</td><td>55–60%</td></tr>
+      <tr><td><span class="hl">Bright skin tones</span></td><td><span class="hl">61–65%</span></td></tr>
+      <tr><td>White card</td><td>77–83%</td></tr>
+      <tr><td style="color:var(--accent)">Clip warning</td><td style="color:var(--accent)">Above 90%</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- PAGE 9: WAVEFORM & HISTOGRAM -->
+<div class="slide">
+  <div class="slide-title">Waveform & histogram</div>
+  <div class="slide-sub">DC-A1 — reading the S709 signal</div>
+  <div class="section">
+    <div class="section-label">Waveform — how to use on set</div>
+    <div class="step"><div class="snum">1</div><span class="stext">Open waveform (F1)</span></div>
+    <div class="step"><div class="snum">2</div><span class="stext">Skin tone signal should sit at 61–65%</span></div>
+    <div class="step"><div class="snum">3</div><span class="stext">Confirm highlights not exceeding 90%</span></div>
+    <div class="step"><div class="snum">4</div><span class="stext">Confirm shadows not crushing below 10%</span></div>
+    <div class="note" style="margin-top:8px">Run and gun: zebras = fast primary check, waveform = secondary confirm. Controlled: set with waveform first, verify with zebras.</div>
+  </div>
+  <div class="divider"></div>
+  <div class="section">
+    <div class="section-label">Histogram — reading the scene</div>
+    <div class="bul"><span class="bdot">·</span><span class="btext">Bulk in middle third (40–70%): well exposed</span></div>
+    <div class="bul"><span class="bdot">·</span><span class="btext">Spike hard right edge: highlights clipping — pull down</span></div>
+    <div class="bul"><span class="bdot">·</span><span class="btext">Spike hard left edge: shadows crushing — push up</span></div>
+    <div class="bul"><span class="bdot">·</span><span class="btext">Bulk shifted far left: underexposed — check zebras</span></div>
+  </div>
+  <div class="divider"></div>
+  <div class="section-label">Tool summary</div>
+  <div class="card"><div class="card-row"><span class="card-label">C1 Zebra (61%)</span><span class="card-value">Fast skin check</span></div></div>
+  <div class="card"><div class="card-row"><span class="card-label">C2 Zebra (77%)</span><span class="card-value">Highlight warning</span></div></div>
+  <div class="card"><div class="card-row"><span class="card-label">Waveform</span><span class="card-value">Precise exposure</span></div></div>
+  <div class="card"><div class="card-row"><span class="card-label">Histogram</span><span class="card-value">Overall scene check</span></div></div>
+</div>
+
+<!-- PAGE 10: CHECKLIST -->
+<div class="slide">
+  <div class="slide-title">Pre-shoot checklist</div>
+  <div class="slide-sub">Tap to check off</div>
+  <div id="cl"></div>
+  <button class="reset-btn" onclick="resetCL()">Reset checklist</button>
+</div>
+
+</div><!-- /slides -->
+</div><!-- /slides-wrap -->
+
+<div class="nav-btns">
+  <button class="nav-btn" id="pb" onclick="go(cur-1)" disabled>&#8249; Prev</button>
+  <button class="nav-btn" id="nb" onclick="go(cur+1)">Next &#8250;</button>
+</div>
+
+<script>
+const TOTAL = 10;
+let cur = 0;
+
+const CL_ITEMS = [
+  "Log Shooting: On (Flexible ISO), S-Gamut3.Cine/S-Log3, Embed LUT On, LUT: S709",
+  "Frame rate: 50fps standard, 100fps for slo-mo",
+  "ISO at 640 (or lowest native for conditions)",
+  "Zebras: C1 61% ±2% (Standard+Range), C2 77% (Lower Limit)",
+  "AWB Lock Toggle assigned to custom button",
+  "White balance set and locked before first clip",
+  "DC-A1 connected via HDMI — no LUT needed on monitor",
+  "DC-A1 fan on Low (shotgun mic on camera)",
+  "DC-A1 shortcuts: F1 Waveform, F2 Histogram, F3 Peaking",
+  "iPhone: HEVC, HDR off, Log off",
+  "iPhone: Record Video 1080p 25fps",
+  "iPhone: Record Slo-mo 1080p 120fps or 240fps",
+  "AE/AF locked on iPhone before every clip"
+];
+
+let checked = CL_ITEMS.map(() => false);
+
+function renderCL() {
+  document.getElementById('cl').innerHTML = CL_ITEMS.map((t, i) => `
+    <div class="cl-item" onclick="toggle(${i})">
+      <div class="cb${checked[i]?' on':''}"></div>
+      <span class="cl-text${checked[i]?' done':''}">${t}</span>
+    </div>`).join('');
+}
+
+function toggle(i) { checked[i] = !checked[i]; renderCL(); }
+function resetCL() { checked = CL_ITEMS.map(() => false); renderCL(); }
+
+function renderDots() {
+  document.getElementById('dots').innerHTML =
+    Array.from({length:TOTAL},(_,i)=>`<div class="dot${i===cur?' active':''}" onclick="go(${i})"></div>`).join('');
+}
+
+function go(n) {
+  if (n < 0 || n >= TOTAL) return;
+  cur = n;
+  document.getElementById('slides').style.transform = `translateX(-${cur*100}%)`;
+  document.getElementById('pi').textContent = `${cur+1} / ${TOTAL}`;
+  document.getElementById('pb').disabled = cur === 0;
+  document.getElementById('nb').disabled = cur === TOTAL-1;
+  renderDots();
+}
+
+let sx = 0;
+const sw = document.querySelector('.slides-wrap');
+sw.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, {passive:true});
+sw.addEventListener('touchend', e => {
+  const d = sx - e.changedTouches[0].clientX;
+  if (Math.abs(d) > 40) go(d > 0 ? cur+1 : cur-1);
+}, {passive:true});
+
+renderDots();
+renderCL();
+</script>
+</body>
+</html>
